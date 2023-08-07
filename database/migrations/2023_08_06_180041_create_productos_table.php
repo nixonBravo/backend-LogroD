@@ -22,7 +22,7 @@ return new class extends Migration
             $table->float('precio');
             $table->integer('stock');
             $table->string('public_id');
-            $table->text('imagen');
+            $table->text('url');
             $table->boolean('estado_producto')->default(true);
         });
     }
