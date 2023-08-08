@@ -14,23 +14,19 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     private $rulesRegister = array(
-        'cedula' => 'required|unique:personas,cedula|regex:"^([0-9]{10,10})"|max:10|min:10',
+        'cedula' => 'required|numeric|digits:10|unique:users,cedula',
         'nombre' => 'required',
         'apellido' => 'required',
-        'name' => 'required|unique:users,name',
         'email' => 'required|email|unique:users,email',
         'password' => 'required|min:8',
     );
     private $messagesRegister = array(
         'cedula.required' => 'La cedula es requerida',
-        'cedula.unique' => 'Numero de Cedula no valido',
-        'cedula.regex' => 'La cedula debe terner 10 digitos',
-        'cedula.min' => 'La cedula debe terner 10 digitos',
-        'cedula.max' => 'La cedula debe terner 10 digitos',
+        'cedula.numeric' => 'La cedula debe ser numerica',
+        'cedula.digits' => 'La cedula debe tener 10 digitos',
+        'cedula.unique' => 'La cedula ingresada es incorrecta',
         'nombre.required' => 'El nombre es requerido',
         'apellido.required' => 'El apellido es requerido',
-        'name.required' => 'El name es requerido',
-        'name.unique' => 'El name ingresado ya esta en uso',
         'email.required' => 'El email es requerido',
         'email.email' => 'El email debe ser tipo email',
         'email.unique' => 'El email ingresado ya esta en uso',
@@ -60,15 +56,10 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            $persona = Persona::create([
+            $user = new User([
                 'cedula' => $request->cedula,
                 'nombre' => $request->nombre,
                 'apellido' => $request->apellido,
-            ]);
-
-            $user = new User([
-                'persona_id' => $persona->id,
-                'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
             ]);
@@ -112,14 +103,11 @@ class AuthController extends Controller
                         'message' => 'Password Incorrecto',
                     ], 404);
                 }
-
             } else {
                 return response()->json([
                     'message' => 'Usuario no Registrado o Password Incorrecto',
                 ], 404);
             }
-
-
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error al Loguearse',
@@ -127,14 +115,15 @@ class AuthController extends Controller
         }
     }
 
-    public function userProfile(){
+    public function userProfile()
+    {
         $user = auth()->user();
         $usuario = DB::table('users')
-        ->where('users.id', '=', $user->id)
-        ->join('model_has_roles', 'model_has_roles.model_id', '=', 'users.id')
-        ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-        ->select('users.name', 'users.email', 'roles.name as rol')
-        ->get();
+            ->where('users.id', '=', $user->id)
+            ->join('model_has_roles', 'model_has_roles.model_id', '=', 'users.id')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->select('users.name', 'users.email', 'roles.name as rol')
+            ->get();
         return response()->json([
             'message' => 'Perfil de Usuario',
             'User' => $usuario[0],
@@ -142,7 +131,8 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout(){
+    public function logout()
+    {
         auth()->user()->tokens()->delete();
         return response()->json([
             'message' => 'Logout con Exito'

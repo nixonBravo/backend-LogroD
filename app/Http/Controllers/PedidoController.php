@@ -45,6 +45,9 @@ class PedidoController extends Controller
 
     public function __construct(StripeService $stripeService)
     {
+        $this->middleware('can:pedidos.pedidos')->only('allPedidos');
+        $this->middleware('can:pedidos.detalle')->only('detallePedido');
+        $this->middleware('can:pedidos.realizar')->only('realizarPedido');
         $this->stripeService = $stripeService;
     }
 

@@ -10,6 +10,16 @@ use App\Models\Producto;
 
 class CarritoController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:carritos.ver')->only('verCarrito');
+        $this->middleware('can:carritos.add')->only('addProducto');
+        $this->middleware('can:carritos.update')->only('actualizarCarrito');
+        $this->middleware('can:carritos.decrementar')->only('decrementarProducto');
+        $this->middleware('can:carritos.eliminar')->only('eliminarProducto');
+        $this->middleware('can:carritos.vaciar')->only('vaciarCarrito');
+    }
+
     public function verCarrito()
     {
         /* $user = Auth::user();
@@ -42,25 +52,55 @@ class CarritoController extends Controller
 
     public function addProducto(Request $request, $id)
     {
-        /* $user = Auth::user();
-        $carrito = $user->carrito;
+        DB::beginTransaction();
 
-        $productoEnCarrito = $carrito->carritoProducto()->where('producto_id', $id)->first();
-        if ($productoEnCarrito) {
-            $productoEnCarrito->cantidad++;
-            $productoEnCarrito->save();
-        } else {
-            $productoEnCarrito = new CarritoProducto([
-                'producto_id' => $id,
-                'cantidad' => 1,
-            ]);
-            $carrito->carritoProducto()->save($productoEnCarrito);
+        try {
+            $usuario = Auth::user();
+            $carrito = $usuario->carrito;
+
+            // Verificar si el producto ya está en el carrito
+            $productoEnCarrito = $carrito->carritoProducto()->where('producto_id', $id)->first();
+
+            // Obtener el producto desde la base de datos
+            $producto = Producto::findOrFail($id);
+
+            if ($producto->stock <= 0) {
+                return response()->json(['error' => 'No hay suficiente stock disponible'], 400);
+            }
+
+            if ($productoEnCarrito) {
+                // Incrementar cantidad en el carrito
+                $productoEnCarrito->cantidad++;
+                $productoEnCarrito->save();
+            } else {
+                // Agregar producto al carrito
+                $productoEnCarrito = new CarritoProducto([
+                    'producto_id' => $id,
+                    'cantidad' => 1,
+                ]);
+                $carrito->carritoProducto()->save($productoEnCarrito);
+            }
+
+            // Decrementar el stock
+            $producto->stock--;
+            $producto->save();
+
+            // Commit de la transacción
+            DB::commit();
+
+            return response()->json(['message' => 'Producto agregado al carrito']);
+
+        } catch (\Exception $e) {
+            // Rollback en caso de error
+            DB::rollBack();
+
+            return response()->json(['error' => 'Error al agregar el producto al carrito'], 500);
         }
 
         return response()->json([
             'message' => 'Producto Agregado al Carrito'
-        ]); */
-        DB::beginTransaction();
+        ]);
+        /* DB::beginTransaction();
 
         try {
             $user = Auth::user();
@@ -96,9 +136,10 @@ class CarritoController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'error' => 'Error al agregar producto al carrito'
+                'error' => 'Error al agregar producto al carrito',
+                'errors' => $e->getMessage()
             ], 500);
-        }
+        } */
     }
 
     public function actualizarCarrito(Request $request, $id)

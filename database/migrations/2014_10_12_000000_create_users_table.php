@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('persona_id')
-                ->constrained('personas')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
-            $table->string('name')->unique();
+            $table->string('cedula', 10);
+            $table->string('nombre');
+            $table->string('apellido');
             $table->string('email')->unique();
             $table->string('password');
         });

@@ -16,15 +16,12 @@ class User extends Authenticatable
     protected $table = 'users';
 
     protected $fillable = [
-        'persona_id',
-        'name',
+        'cedula',
+        'nombre',
+        'apellido',
         'email',
         'password',
     ];
-
-    public function persona(){
-        return $this->belongsTo(Persona::class);
-    }
 
     public function carritos()
     {
