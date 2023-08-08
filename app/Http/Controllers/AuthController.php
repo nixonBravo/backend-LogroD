@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Persona;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -13,11 +14,21 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     private $rulesRegister = array(
+        'cedula' => 'required|unique:personas,cedula|regex:"^([0-9]{10,10})"|max:10|min:10',
+        'nombre' => 'required',
+        'apellido' => 'required',
         'name' => 'required|unique:users,name',
         'email' => 'required|email|unique:users,email',
         'password' => 'required|min:8',
     );
     private $messagesRegister = array(
+        'cedula.required' => 'La cedula es requerida',
+        'cedula.unique' => 'Numero de Cedula no valido',
+        'cedula.regex' => 'La cedula debe terner 10 digitos',
+        'cedula.min' => 'La cedula debe terner 10 digitos',
+        'cedula.max' => 'La cedula debe terner 10 digitos',
+        'nombre.required' => 'El nombre es requerido',
+        'apellido.required' => 'El apellido es requerido',
         'name.required' => 'El name es requerido',
         'name.unique' => 'El name ingresado ya esta en uso',
         'email.required' => 'El email es requerido',
@@ -49,7 +60,14 @@ class AuthController extends Controller
                 ], 422);
             }
 
+            $persona = Persona::create([
+                'cedula' => $request->cedula,
+                'nombre' => $request->nombre,
+                'apellido' => $request->apellido,
+            ]);
+
             $user = new User([
+                'persona_id' => $persona->id,
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),

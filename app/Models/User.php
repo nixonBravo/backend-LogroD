@@ -16,9 +16,23 @@ class User extends Authenticatable
     protected $table = 'users';
 
     protected $fillable = [
+        'persona_id',
         'name',
         'email',
         'password',
     ];
 
+    public function persona(){
+        return $this->belongsTo(Persona::class);
+    }
+
+    public function carritos()
+    {
+        return $this->hasMany(Carrito::class);
+    }
+
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class);
+    }
 }
