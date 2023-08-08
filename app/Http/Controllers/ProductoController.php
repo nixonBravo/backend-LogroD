@@ -14,6 +14,7 @@ class ProductoController extends Controller
     {
         $this->middleware('can:productos.allProductos')->only('allProductos');
         $this->middleware('can:productos.show')->only('show');
+        $this->middleware('can:productos.search')->only('search');
         $this->middleware('can:productos.store')->only('store');
         $this->middleware('can:productos.update')->only('update');
         $this->middleware('can:productos.destroy')->only('destroy');
@@ -59,6 +60,35 @@ class ProductoController extends Controller
         'stock.integer' => 'Solo numeros enteros',
         'stock.min' => 'El stock no puede ser menor a 0'
     );
+
+    public function search(Request $request)
+    {
+        $request->validate([
+            'buscar' => 'required|string',
+        ]);
+
+        $search = $request->buscar;
+
+        $resultados = Producto::where('estado_producto', true)
+            ->where(function ($query) use ($search) {
+                $query->where('producto', 'LIKE', "%$search%")
+                    ->orWhereHas('categoria', function ($query) use ($search) {
+                        $query->where('estado_categoria', true)
+                            ->where('categoria', 'LIKE', "%$search%");
+                    });
+            })
+            ->paginate(10);
+
+        if ($resultados->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron Productos o Categorías con ese nombre'
+            ], 404);
+        }
+
+        return response()->json([
+            'Resultados de Busqueda' => $resultados
+        ], 200);
+    }
 
     public function allProductos()
     {

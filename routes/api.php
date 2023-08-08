@@ -36,6 +36,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(ProductoController::class)->group(function () {
         Route::get('productos', 'allProductos')->name('productos.allProductos');
         Route::get('producto/{id}', 'show')->name('productos.show');
+        Route::get('search', 'search')->name('productos.search');
         Route::post('producto-store', 'store')->name('productos.store');
         Route::put('producto-update/{id}', 'update')->name('productos.update');
         Route::delete('producto-delete/{id}', 'destroy')->name('productos.destroy');
