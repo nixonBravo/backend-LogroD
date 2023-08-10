@@ -35,7 +35,7 @@ class RolSeeder extends Seeder
         //Carrito
         Permission::create(['name' => 'carritos.ver'])->syncRoles([$rol2]);
         Permission::create(['name' => 'carritos.add'])->syncRoles([$rol2]);
-        Permission::create(['name' => 'carritos.update'])->syncRoles([$rol2]);
+        Permission::create(['name' => 'carritos.incrementar'])->syncRoles([$rol2]);
         Permission::create(['name' => 'carritos.decrementar'])->syncRoles([$rol2]);
         Permission::create(['name' => 'carritos.eliminar'])->syncRoles([$rol2]);
         Permission::create(['name' => 'carritos.vaciar'])->syncRoles([$rol2]);

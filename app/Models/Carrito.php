@@ -12,7 +12,6 @@ class Carrito extends Model
     protected $table = 'carritos';
     protected $fillable = [
         'user_id',
-        'fecha',
         'estado',
     ];
 
@@ -21,15 +20,15 @@ class Carrito extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function carritoProducto()
+    public function carritos()
     {
         return $this->hasMany(CarritoProducto::class);
     }
 
-    public function calcularTotal()
+    public function productos()
     {
-        return $this->carritoProducto->sum(function ($productoEnCarrito) {
-            return $productoEnCarrito->producto->precio * $productoEnCarrito->cantidad;
-        });
+        return $this->belongsToMany(Producto::class, 'carrito_productos', 'carrito_id', 'producto_id')
+            ->withPivot('cantidad');
     }
+
 }

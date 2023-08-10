@@ -20,12 +20,24 @@ class Producto extends Model
         'url',
     ];
 
-    public function categoria(){
+    public function categoria()
+    {
         return $this->belongsTo(Categoria::class);
     }
 
-    public function detallesPedido()
+    public function detalles()
     {
         return $this->hasMany(DetallePedido::class);
     }
+
+    public function carritos()
+    {
+        return $this->hasMany(CarritoProducto::class);
+    }
+
+    /* public function carritos()
+    {
+        return $this->belongsToMany(Carrito::class, 'carrito_productos')
+            ->withPivot('cantidad');
+    } */
 }

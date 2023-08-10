@@ -46,22 +46,31 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     //Carrito
-    Route::controller(CarritoController::class)->group(function(){
+    /* Route::controller(CarritoController::class)->group(function(){
         Route::get('carrito', 'verCarrito')->name('carritos.ver');
         Route::post('add-producto/{id}', 'addProducto')->name('carritos.add');
         Route::put('update-producto/{id}', 'actualizarCarrito')->name('carritos.update');
         Route::put('decrementar/{id}', 'decrementarProducto')->name('carritos.decrementar');
         Route::delete('delete-producto/{id}', 'eliminarProducto')->name('carritos.eliminar');
         Route::delete('vaciar-carrito', 'vaciarCarrito')->name('carritos.vaciar');
-    });
+    }); */
+    Route::get('carrito', [CarritoController::class, 'verCarrito'])->name('carritos.ver');
+    Route::post('add-producto', [CarritoController::class, 'addItem'])->name('carritos.add');
+    Route::put('incrementar-producto/{carritoProducto}', [CarritoController::class, 'incrementarItem'])->name('carritos.incrementar');
+    Route::put('decrementar-producto/{carritoProducto}', [CarritoController::class, 'decrementarItem'])->name('carritos.decrementar');
+    Route::delete('eliminar-producto/{carritoProducto}', [CarritoController::class, 'eliminarItem'])->name('carritos.eliminar');
+    Route::put('vaciar/{id}', [CarritoController::class, 'vaciarCarrito'])->name('carritos.vaciar');
 
     //Pedido
-    Route::controller(PedidoController::class)->group(function () {
+    /* Route::controller(PedidoController::class)->group(function () {
         //Route::post('stripe', [PedidoController::class, 'stripePost']);
         Route::get('pedidos', 'allPedidos')->name('pedidos.pedidos');
         Route::get('pedido/{id}', 'detallePedido')->name('pedidos.detalle');
         Route::post('realizar-pedido', 'realizarPedido')->name('pedidos.realizar');
-    });
+    }); */
+    Route::post('pedidos/realizar', [PedidoController::class, 'realizarPedido']);
+    Route::get('pedidos/{pedido}', [PedidoController::class, 'verDetallePedido']);
+    Route::get('pedidos', [PedidoController::class, 'verDetallesPedidos']);
 
     //User
     Route::controller(AuthController::class)->group(function () {

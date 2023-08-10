@@ -12,7 +12,6 @@ class Pedido extends Model
     protected $table = 'pedidos';
     protected $fillable = [
         'user_id',
-        'fecha_pedido',
         'direccion',
         'celular',
         'estado',
@@ -24,7 +23,7 @@ class Pedido extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function detallesPedido()
+    public function detalles()
     {
         return $this->hasMany(DetallePedido::class);
     }

@@ -17,7 +17,6 @@ return new class extends Migration
                 ->constrained('users')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->date('fecha_pedido');
             $table->text('direccion');
             $table->string('celular');
             $table->string('estado');
