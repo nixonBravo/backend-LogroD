@@ -63,31 +63,37 @@ class ProductoController extends Controller
 
     public function search(Request $request)
     {
-        $request->validate([
-            'buscar' => 'required|string',
-        ]);
+        try {
+            $request->validate([
+                'buscar' => 'required|string',
+            ]);
 
-        $search = $request->buscar;
+            $search = $request->buscar;
 
-        $resultados = Producto::where('estado_producto', true)
-            ->where(function ($query) use ($search) {
-                $query->where('producto', 'LIKE', "%$search%")
-                    ->orWhereHas('categoria', function ($query) use ($search) {
-                        $query->where('estado_categoria', true)
-                            ->where('categoria', 'LIKE', "%$search%");
-                    });
-            })
-            ->paginate(10);
+            $resultados = Producto::where('estado_producto', true)
+                ->where(function ($query) use ($search) {
+                    $query->where('producto', 'LIKE', "%$search%")
+                        ->orWhereHas('categoria', function ($query) use ($search) {
+                            $query->where('estado_categoria', true)
+                                ->where('categoria', 'LIKE', "%$search%");
+                        });
+                })
+                ->paginate(10);
 
-        if ($resultados->isEmpty()) {
+            if ($resultados->isEmpty()) {
+                return response()->json([
+                    'message' => 'No se encontraron Productos o Categorías con ese nombre'
+                ], 404);
+            }
+
             return response()->json([
-                'message' => 'No se encontraron Productos o Categorías con ese nombre'
-            ], 404);
+                'Resultados de Busqueda' => $resultados
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'No se pudo realizar la busqueda'
+            ], 500);
         }
-
-        return response()->json([
-            'Resultados de Busqueda' => $resultados
-        ], 200);
     }
 
     public function allProductos()
@@ -175,7 +181,6 @@ class ProductoController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error al obtener el producto',
-                'erros' => $th->getMessage(),
             ], 500);
         }
     }

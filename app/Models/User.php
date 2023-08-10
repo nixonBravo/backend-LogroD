@@ -8,10 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+/* use function Illuminate\Events\queueable;
+use Laravel\Cashier\Billable; */
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles; //Billable;
     public $timestamps = false;
     protected $table = 'users';
 
@@ -32,4 +34,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(Pedido::class);
     }
+
+    /* protected static function booted(): void
+    {
+        static::updated(queueable(function (User $customer) {
+            if ($customer->hasStripeId()) {
+                $customer->syncStripeCustomerDetails();
+            }
+        }));
+    } */
 }

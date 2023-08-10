@@ -22,6 +22,8 @@ return new class extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->integer('cantidad');
+            //$table->float('sub_total');
+            //$table->float('total');
         });
     }
 

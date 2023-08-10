@@ -15,6 +15,7 @@ class DetallePedido extends Model
         'producto_id',
         'cantidad',
         'precio_unitario',
+        'total',
     ];
 
     public function pedido()

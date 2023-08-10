@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Categoria;
 use App\Models\Producto;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -40,9 +39,8 @@ class RolSeeder extends Seeder
         Permission::create(['name' => 'carritos.eliminar'])->syncRoles([$rol2]);
         Permission::create(['name' => 'carritos.vaciar'])->syncRoles([$rol2]);
         //Pedido
-        Permission::create(['name' => 'pedidos.pedidos'])->syncRoles([$rol2]);
-        Permission::create(['name' => 'pedidos.detalle'])->syncRoles([$rol2]);
-        Permission::create(['name' => 'pedidos.realizar'])->syncRoles([$rol2]);
+        Permission::create(['name' => 'pedidos.comprar'])->syncRoles([$rol2]);
+        Permission::create(['name' => 'pedidos.ver'])->syncRoles([$rol2]);
 
 
         User::create([
@@ -62,15 +60,15 @@ class RolSeeder extends Seeder
         ])->assignRole('Cliente');
 
         $categoria = Categoria::create([
-            'categoria' => 'seeder'
+            'categoria' => 'Bebidas'
         ]);
 
         Producto::create([
             'categoria_id' => $categoria->id,
-            'producto' => 'seeder',
-            'descripcion' => 'svsdvdsvdsv',
-            'precio' => 1,
-            'stock' => 2,
+            'producto' => 'Coca Cola',
+            'descripcion' => 'Coca Cola 3 Litros',
+            'precio' => 3,
+            'stock' => 10,
             'public_id' => '',
             'url' => ''
         ]);

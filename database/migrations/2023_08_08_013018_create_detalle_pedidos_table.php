@@ -23,6 +23,7 @@ return new class extends Migration
                 ->onUpdate('cascade');
             $table->integer('cantidad');
             $table->float('precio_unitario');
+            $table->float('total');
         });
     }
 

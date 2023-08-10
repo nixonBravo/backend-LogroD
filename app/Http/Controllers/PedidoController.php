@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DetallePedido;
 use App\Models\Pedido;
-use App\Models\CarritoProducto;
 use Illuminate\Http\Request;
-use App\Providers\StripeService;
-//use Stripe\Stripe;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Services\StripeService;
+/* use Stripe\Stripe;
+use Stripe\Charge; */
 
 class PedidoController extends Controller
 {
@@ -17,100 +14,89 @@ class PedidoController extends Controller
 
     public function __construct(StripeService $stripeService)
     {
-        $this->middleware('can:pedidos.pedidos')->only('allPedidos');
-        $this->middleware('can:pedidos.detalle')->only('detallePedido');
-        $this->middleware('can:pedidos.realizar')->only('realizarPedido');
+        $this->middleware('can:pedidos.comprar')->only('realizarPedido');
+        $this->middleware('can:pedidos.ver')->only('verPedidos');
         $this->stripeService = $stripeService;
     }
 
     public function realizarPedido(Request $request)
     {
-        // Valida la solicitud
-        $request->validate([
-            'direccion' => 'required|string',
-            'celular' => 'required|string',
-            'token' => 'required|string', // Token de Stripe para el pago
-        ]);
-
-        $user = auth()->user();
-        $carrito = $user->carritos()->where('estado', 'Activo')->firstOrFail();
-
-        // Obtén los productos en el carrito
-        $productos = $carrito->productos;
-
-        // Calcula el total del pedido
-        $total = 0;
-        foreach ($productos as $producto) {
-            $total += $producto->precio * $producto->pivot->cantidad;
-        }
-
-        // Realiza el pago con Stripe
-        Stripe::setApiKey(config('services.stripe.secret'));
-        $charge = \Stripe\Charge::create([
-            'amount' => $total * 100, // Stripe trabaja con cantidades en centavos
-            'currency' => 'usd', // Cambia a tu moneda
-            'source' => $request->token,
-            'description' => 'Pago de pedido',
-        ]);
-
-        // Crea el pedido en la base de datos
-        $pedido = Pedido::create([
-            'user_id' => $user->id,
-            'direccion' => $request->direccion,
-            'celular' => $request->celular,
-            'total' => $total,
-            'estado' => 'Pendiente', // Cambia según tus estados de pedido
-        ]);
-
-        // Crea los detalles del pedido
-        foreach ($productos as $producto) {
-            $pedido->detalles()->create([
-                'producto_id' => $producto->id,
-                'cantidad' => $producto->pivot->cantidad,
-                'precio_unitario' => $producto->precio,
-            ]);
-        }
-
-        // Vacía el carrito
-        foreach ($productos as $producto) {
-            // Aumenta el stock de los productos eliminados del carrito
-            $producto->stock += $producto->pivot->cantidad;
-            $producto->save();
-        }
-        $carrito->productos()->detach();
-
-        return response()->json(['message' => 'Pedido realizado con éxito']);
-    }
-
-    public function verDetallePedido(Pedido $pedido)
-    {
-        // Asegúrate de que el usuario autenticado sea el dueño del pedido
-        $this->authorize('view', $pedido);
-
         try {
-            $detallePedido = $pedido->detalles;
-            if ($detallePedido->isEmpty()) {
-                throw new ModelNotFoundException();
+            $request->validate([
+                'direccion' => 'required|string',
+                'celular' => 'required|string',
+            ]);
+
+            $user = auth()->user();
+            $carrito = $user->carritos()->where('estado', 'Activo')->firstOrFail();
+
+            $productos = $carrito->productos;
+
+            $total = 0;
+            foreach ($productos as $producto) {
+                $total += $producto->precio * $producto->pivot->cantidad;
             }
 
-            return response()->json(['detalle_pedido' => $detallePedido]);
-        } catch (ModelNotFoundException $exception) {
-            return response()->json(['message' => 'No se encontró ningún detalle para este pedido'], 404);
+            $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+            $token = 'tok_visa';
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+            $charge = $stripe->charges->create([
+                'amount' => $total * 100,
+                'currency' => 'usd',
+                'source' => $token,
+                'description' => $request->description,
+            ]);
+
+            $pedido = Pedido::create([
+                'user_id' => $user->id,
+                'direccion' => $request->direccion,
+                'celular' => $request->celular,
+                'total' => $total,
+                'estado' => 'Pendiente',
+            ]);
+
+            foreach ($productos as $producto) {
+                $pedido->detalles()->create([
+                    'producto_id' => $producto->id,
+                    'cantidad' => $producto->pivot->cantidad,
+                    'precio_unitario' => $producto->precio,
+                    'total' => $total
+                ]);
+            }
+
+            $carrito->productos()->detach();
+
+            return response()->json([
+                'message' => 'Pedido realizado con éxito',
+                'Status' => $charge->status,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'No se pudo realizar la compra',
+                //'erros' => $th->getMessage()
+            ]);
         }
     }
 
-    public function verDetallesPedidos()
+    public function verPedidos()
     {
-        // Obtén los pedidos del usuario autenticado
-        $user = auth()->user();
-        $pedidos = $user->pedidos;
+        try {
+            $user = auth()->user();
+            $pedidos = $user->pedidos;
 
-        if ($pedidos->isEmpty()) {
-            return response()->json(['message' => 'No has realizado ningún pedido'], 404);
+            if ($pedidos->isEmpty()) {
+                return response()->json([
+                    'message' => 'No has realizado ningún pedido'
+                ], 404);
+            }
+
+            return response()->json([
+                'Pedidos' => $pedidos,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'No se pueden ver Detalles de Pedidos',
+            ], 500);
         }
-
-        return response()->json([
-            'Pedidos' => $pedidos,
-        ]);
     }
 }

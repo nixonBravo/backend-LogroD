@@ -64,6 +64,7 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
             ]);
             $user->assignRole('Cliente');
+            //$user->createAsStripeCustomer();
             $user->save();
 
             return response()->json([
@@ -117,25 +118,36 @@ class AuthController extends Controller
 
     public function userProfile()
     {
-        $user = auth()->user();
-        $usuario = DB::table('users')
-            ->where('users.id', '=', $user->id)
-            ->join('model_has_roles', 'model_has_roles.model_id', '=', 'users.id')
-            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->select('users.name', 'users.email', 'roles.name as rol')
-            ->get();
-        return response()->json([
-            'message' => 'Perfil de Usuario',
-            'User' => $usuario[0],
-            /* "usuario"=>$user, */
-        ]);
+        try {
+            $user = auth()->user();
+            $usuario = DB::table('users')
+                ->where('users.id', '=', $user->id)
+                ->join('model_has_roles', 'model_has_roles.model_id', '=', 'users.id')
+                ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+                ->select('users.name', 'users.email', 'roles.name as rol')
+                ->get();
+            return response()->json([
+                'message' => 'Perfil de Usuario',
+                'User' => $usuario[0],
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'No se pudo ver el perfil',
+            ], 500);
+        }
     }
 
     public function logout()
     {
-        auth()->user()->tokens()->delete();
-        return response()->json([
-            'message' => 'Logout con Exito'
-        ]);
+        try {
+            auth()->user()->tokens()->delete();
+            return response()->json([
+                'message' => 'Logout con Exito'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Logout con Exito'
+            ], 500);
+        }
     }
 }
