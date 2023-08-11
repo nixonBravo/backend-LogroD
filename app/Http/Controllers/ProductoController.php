@@ -140,7 +140,7 @@ class ProductoController extends Controller
             $producto = new Producto([
                 'categoria_id' => $request->categoria_id,
                 'producto' => $request->producto,
-                'descripcion' => $request->descrcipcion,
+                'descripcion' => $request->descripcion,
                 'precio' => $request->precio,
                 'stock' => $request->stock,
                 'public_id' => $public_id,

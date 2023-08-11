@@ -91,6 +91,11 @@ class AuthController extends Controller
             }
 
             $user = User::where('email', '=', $request->email)->first();
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Usuario no Registrado o Email incorrecto'
+                ], 203);
+            }
 
             if (isset($user->id)) {
                 if (Hash::check($request->password, $user->password)) {
@@ -106,7 +111,7 @@ class AuthController extends Controller
                 }
             } else {
                 return response()->json([
-                    'message' => 'Usuario no Registrado o Password Incorrecto',
+                    'message' => 'Password Incorrecto',
                 ], 404);
             }
         } catch (\Throwable $th) {
@@ -124,7 +129,7 @@ class AuthController extends Controller
                 ->where('users.id', '=', $user->id)
                 ->join('model_has_roles', 'model_has_roles.model_id', '=', 'users.id')
                 ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                ->select('users.name', 'users.email', 'roles.name as rol')
+                ->select('users.nombre', 'users.apellido', 'users.email', 'roles.name as rol')
                 ->get();
             return response()->json([
                 'message' => 'Perfil de Usuario',
