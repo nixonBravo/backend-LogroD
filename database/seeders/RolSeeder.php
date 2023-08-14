@@ -28,7 +28,7 @@ class RolSeeder extends Seeder
         Permission::create(['name' => 'productos.allProductos'])->syncRoles([$rol1, $rol2]);
         Permission::create(['name' => 'productos.show'])->syncRoles([$rol1, $rol2]);
         Permission::create(['name' => 'productos.search'])->syncRoles([$rol1, $rol2]);
-        Permission::create(['name' => 'productos.store'])->syncRoles([$rol1]);
+        Permission::create(['name' => 'productos.store'])->syncRoles([$rol1, $rol2]);
         Permission::create(['name' => 'productos.update'])->syncRoles([$rol1]);
         Permission::create(['name' => 'productos.destroy'])->syncRoles([$rol1]);
         //Carrito
@@ -59,7 +59,7 @@ class RolSeeder extends Seeder
             'password' => bcrypt('12345678'),
         ])->assignRole('Cliente');
 
-        $categoria = Categoria::create([
+        /* $categoria = Categoria::create([
             'categoria' => 'Bebidas'
         ]);
 
@@ -71,6 +71,6 @@ class RolSeeder extends Seeder
             'stock' => 10,
             'public_id' => '',
             'url' => ''
-        ]);
+        ]); */
     }
 }
