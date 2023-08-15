@@ -119,9 +119,10 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         try {
-            if (!Auth::user()->hasRole('Admin')) {
+            $user = auth()->user();
+            if (!$user) {
                 return response()->json([
-                    'message' => 'No tienes permisos para ingresar productos',
+                    'message' => 'Inicia Secion Para Realizar esta Accion',
                 ], 403);
             }
             $validator = Validator::make($request->all(), $this->rules, $this->messages);
