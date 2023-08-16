@@ -69,12 +69,12 @@ class PedidoController extends Controller
             return response()->json([
                 'message' => 'Pedido realizado con éxito',
                 'Status' => $charge->status,
-            ]);
+            ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'No se pudo realizar la compra',
                 //'erros' => $th->getMessage()
-            ]);
+            ], 500);
         }
     }
 
