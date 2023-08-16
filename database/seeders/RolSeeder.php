@@ -2,8 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Categoria;
-use App\Models\Producto;
+
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -58,19 +57,5 @@ class RolSeeder extends Seeder
             'email' => 'prueba@gmail.com',
             'password' => bcrypt('12345678'),
         ])->assignRole('Cliente');
-
-        /* $categoria = Categoria::create([
-            'categoria' => 'Bebidas'
-        ]);
-
-        Producto::create([
-            'categoria_id' => $categoria->id,
-            'producto' => 'Coca Cola',
-            'descripcion' => 'Coca Cola 3 Litros',
-            'precio' => 3,
-            'stock' => 10,
-            'public_id' => '',
-            'url' => ''
-        ]); */
     }
 }
