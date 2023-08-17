@@ -78,7 +78,7 @@ class ProductoController extends Controller
                                 ->where('categoria', 'LIKE', "%$search%");
                         });
                 })
-                ->paginate(15);
+                ->get();
 
             if ($resultados->isEmpty()) {
                 return response()->json([
@@ -99,7 +99,7 @@ class ProductoController extends Controller
     public function allProductos()
     {
         try {
-            $productos = Producto::where('estado_producto', true)->paginate(15);
+            $productos = Producto::where('estado_producto', true)->get();
 
             if ($productos->isEmpty()) {
                 return response()->json([
