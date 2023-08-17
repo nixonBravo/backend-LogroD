@@ -116,7 +116,7 @@ class CarritoController extends Controller
             if ($user->carritos->contains($carritoProducto->carrito)) {
                 $producto = $carritoProducto->producto;
 
-                if ($producto->stock > $carritoProducto->cantidad) {
+                if ($producto->stock >= $carritoProducto->cantidad) {
                     $carrito = $carritoProducto->carrito;
 
                     $carrito->productos()->where('producto_id', $producto->id)->increment('cantidad', 1);
