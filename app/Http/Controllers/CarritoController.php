@@ -43,11 +43,9 @@ class CarritoController extends Controller
                 }
 
                 return response()->json([
-                    'Carrito' => [
-                        'id' => $carritoId,
-                        'productos' => $productos,
-                        'total' => $total
-                    ]
+                    'Carrito' => $carritoId,
+                    'Productos' => $productos,
+                    'Total' => $total
                 ], 200);
             } else {
                 return response()->json([
