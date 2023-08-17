@@ -42,7 +42,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     //Carrito
     Route::get('carrito', [CarritoController::class, 'verCarrito'])->name('carritos.ver');
     Route::post('addProducto', [CarritoController::class, 'addItem'])->name('carritos.add');
-    Route::post('incrementarProducto/{id}', [CarritoController::class, 'incrementarItem'])->name('carritos.incrementar');
+    Route::post('incrementarProducto/{carritoProducto}', [CarritoController::class, 'incrementarItem'])->name('carritos.incrementar');
     Route::post('decrementarProducto/{carritoProducto}', [CarritoController::class, 'decrementarItem'])->name('carritos.decrementar');
     Route::delete('eliminarProducto/{carritoProducto}', [CarritoController::class, 'eliminarItem'])->name('carritos.eliminar');
     Route::delete('vaciar', [CarritoController::class, 'vaciarCarrito'])->name('carritos.vaciar');

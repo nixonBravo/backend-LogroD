@@ -28,21 +28,26 @@ class CarritoController extends Controller
             $carrito = $user->carritos()->where('estado', 'Activo')->first();
 
             if ($carrito) {
-                $productos = $carrito->productos;
+                $carritoId = $carrito->id;
+                $productos = $carrito->productos()->withPivot('id as producto_carrito')->get();
 
                 if ($productos->isEmpty()) {
                     return response()->json([
                         'message' => 'El carrito está vacío'
                     ], 200);
                 }
+
                 $total = 0;
                 foreach ($productos as $producto) {
                     $total += $producto->precio * $producto->pivot->cantidad;
                 }
 
                 return response()->json([
-                    'Productos' => $productos,
-                    'Total' => $total
+                    'Carrito' => [
+                        'id' => $carritoId,
+                        'productos' => $productos,
+                        'total' => $total
+                    ]
                 ], 200);
             } else {
                 return response()->json([
@@ -78,7 +83,6 @@ class CarritoController extends Controller
                     ['estado' => 'Activo'],
                     ['estado' => 'Activo']
                 );
-
                 $existingProduct = $carrito->productos()->where('producto_id', $producto->id)->first();
                 if ($existingProduct) {
                     $newQuantity = $existingProduct->pivot->cantidad + $request->cantidad;
@@ -91,7 +95,8 @@ class CarritoController extends Controller
                 $producto->save();
 
                 return response()->json([
-                    'message' => 'Producto añadido al carrito con éxito'
+                    'message' => 'Producto añadido al carrito con éxito',
+                    'Producto Añadido' => $producto->producto,
                 ], 200);
             } else {
                 return response()->json([
@@ -105,26 +110,25 @@ class CarritoController extends Controller
         }
     }
 
-
-    public function incrementarItem($id)
+    public function incrementarItem(CarritoProducto $carritoProducto)
     {
         try {
             $user = auth()->user();
 
-            if ($user->carritos->contains($id->carrito)) {
-                $producto = $id->producto;
+            if ($user->carritos->contains($carritoProducto->carrito)) {
+                $producto = $carritoProducto->producto;
 
-                if ($producto->stock > $id->cantidad) {
-                    // Verifica si el producto está en el carrito del usuario
-                    $carrito = $id->carrito;
+                if ($producto->stock > $carritoProducto->cantidad) {
+                    $carrito = $carritoProducto->carrito;
+
                     $carrito->productos()->where('producto_id', $producto->id)->increment('cantidad', 1);
 
-                    // Actualiza el stock del producto
                     $producto->stock -= 1;
                     $producto->save();
 
                     return response()->json([
-                        'message' => 'Cantidad incrementada con éxito'
+                        'message' => 'Cantidad incrementada con éxito',
+                        'Producto Incrementado' => $producto->producto,
                     ], 200);
                 } else {
                     return response()->json([
@@ -152,7 +156,6 @@ class CarritoController extends Controller
             if ($user->carritos->contains($carritoProducto->carrito)) {
                 if ($carritoProducto->cantidad > 1) {
                     $carritoProducto->decrement('cantidad', 1);
-
                     $producto = $carritoProducto->producto;
                     $producto->stock += 1;
                     $producto->save();
