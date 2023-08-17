@@ -69,7 +69,7 @@ class CarritoController extends Controller
             $producto = Producto::findOrFail($request->producto_id);
             if ($producto->estado_producto == false) {
                 return response()->json([
-                    'message' => 'Producto no esta Disponible'
+                    'message' => 'Producto no está disponible'
                 ], 203);
             }
 
@@ -79,7 +79,13 @@ class CarritoController extends Controller
                     ['estado' => 'Activo']
                 );
 
-                $carrito->productos()->attach($producto->id, ['cantidad' => $request->cantidad]);
+                $existingProduct = $carrito->productos()->where('producto_id', $producto->id)->first();
+                if ($existingProduct) {
+                    $newQuantity = $existingProduct->pivot->cantidad + $request->cantidad;
+                    $carrito->productos()->updateExistingPivot($producto->id, ['cantidad' => $newQuantity]);
+                } else {
+                    $carrito->productos()->attach($producto->id, ['cantidad' => $request->cantidad]);
+                }
 
                 $producto->stock -= $request->cantidad;
                 $producto->save();
@@ -99,17 +105,21 @@ class CarritoController extends Controller
         }
     }
 
-    public function incrementarItem(CarritoProducto $carritoProducto)
+
+    public function incrementarItem($id)
     {
         try {
             $user = auth()->user();
 
-            if ($user->carritos->contains($carritoProducto->carrito)) {
-                $producto = $carritoProducto->producto;
+            if ($user->carritos->contains($id->carrito)) {
+                $producto = $id->producto;
 
-                if ($producto->stock > $carritoProducto->cantidad) {
-                    $carritoProducto->increment('cantidad', 1);
+                if ($producto->stock > $id->cantidad) {
+                    // Verifica si el producto está en el carrito del usuario
+                    $carrito = $id->carrito;
+                    $carrito->productos()->where('producto_id', $producto->id)->increment('cantidad', 1);
 
+                    // Actualiza el stock del producto
                     $producto->stock -= 1;
                     $producto->save();
 
@@ -128,7 +138,8 @@ class CarritoController extends Controller
             }
         } catch (\Throwable $th) {
             return response()->json([
-                'message' => 'No se pudo decrementar el producto del carrito'
+                'message' => 'No se pudo incrementar la cantidad del producto en el carrito',
+                'error' => $th->getMessage()
             ], 500);
         }
     }
